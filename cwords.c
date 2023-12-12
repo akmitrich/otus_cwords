@@ -4,6 +4,8 @@
 #include <string.h>
 ssize_t getline(char **lineptr, size_t *n, FILE *stream);
 
+#include "dict.h"
+
 static int process_file(FILE *);
 
 int main(int argc, const char *argv[])
@@ -31,6 +33,15 @@ int main(int argc, const char *argv[])
     fclose(input);
 
     return 0;
+}
+
+void process_word(const char *word)
+{
+    struct Token t = dict_token_new(word);
+    printf("| ");
+    dict_token_print(t);
+    putchar(' ');
+    dict_token_delete(t);
 }
 
 static const char *separators = "\n \t,.;-*&?!\'\"()[]{}<>=";
@@ -65,7 +76,7 @@ int process_line(char *line)
                 word[i] = line[start + i];
             }
             word[size] = '\0';
-            printf("|%s", word);
+            process_word(word);
             free(word);
         }
     }
@@ -76,7 +87,6 @@ int process_line(char *line)
 
 int process_file(FILE *input)
 {
-    size_t count = 0;
     char *line = NULL;
     int result = 0;
     while (!feof(input) && !ferror(input))
@@ -88,13 +98,9 @@ int process_file(FILE *input)
         {
             printf("ERROR: could not read line.\n");
             result = -1;
-            break;
         }
         else
-        {
-            printf("%lu. (%ld - %lu)", ++count, len, size);
             result = process_line(line);
-        }
         if (line)
             free(line);
         if (result < 0)
