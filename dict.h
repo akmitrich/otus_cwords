@@ -7,6 +7,25 @@ struct Token
     int len;
 };
 
+struct Item
+{
+    struct Token key;
+    int value;
+};
+
+struct Dict
+{
+    struct Item *items;
+    int len;
+    int capacity;
+};
+
+struct Dict dict_new();
+
+struct Dict dict_with_capacity(int capacity);
+
+void dict_delete(struct Dict d);
+
 struct Token
 dict_token_new(const char *word);
 

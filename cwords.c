@@ -35,6 +35,8 @@ int main(int argc, const char *argv[])
     return 0;
 }
 
+static struct Dict word_count;
+
 void process_word(const char *word)
 {
     struct Token t = dict_token_new(word);
@@ -107,5 +109,7 @@ int process_file(FILE *input)
             break;
     }
     printf("\n");
+    word_count = dict_with_capacity(100);
+    printf("Dict: items=%p, len=%d, capacity=%d\n", (void *)word_count.items, word_count.len, word_count.capacity);
     return result;
 }
