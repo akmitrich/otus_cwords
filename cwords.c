@@ -33,11 +33,10 @@ int main(int argc, const char *argv[])
     return 0;
 }
 
-static const char *separators = "\n \t,.;-*&?!\'\"()[]{}";
+static const char *separators = "\n \t,.;-*&?!\'\"()[]{}<>=";
 
 int process_line(char *line)
 {
-    printf("%s", line);
     int len = strlen(line);
     int current = 0;
     while (current < len)
@@ -66,11 +65,11 @@ int process_line(char *line)
                 word[i] = line[start + i];
             }
             word[size] = '\0';
-            printf("%s|", word);
+            printf("|%s", word);
             free(word);
         }
     }
-    printf("\n");
+    printf(" <- %s", line);
 
     return 0;
 }
