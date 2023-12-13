@@ -39,14 +39,14 @@ static struct Dict word_count;
 
 void process_word(const char *word)
 {
-    struct Token t = dict_token_new(word);
-    printf("| ");
-    dict_token_print(t);
-    putchar(' ');
-    dict_token_delete(t);
+    int *count = dict_get(word_count, word);
+    if (count)
+        ++(*count);
+    else
+        dict_insert(word_count, word);
 }
 
-static const char *separators = "\n \t,.;-*&?!\'\"()[]{}<>=";
+static const char *separators = "\n \t,.;-*&?!\'\"()[]{}<>=\\";
 
 int process_line(char *line)
 {
@@ -91,6 +91,7 @@ int process_file(FILE *input)
 {
     char *line = NULL;
     int result = 0;
+    word_count = dict_with_capacity(100);
     while (!feof(input) && !ferror(input))
     {
         line = NULL;
@@ -109,7 +110,14 @@ int process_file(FILE *input)
             break;
     }
     printf("\n");
-    word_count = dict_with_capacity(100);
-    printf("Dict: items=%p, len=%d, capacity=%d\n", (void *)word_count.items, word_count.len, word_count.capacity);
+
+    printf("Dict: items=%p, capacity=%d\n", (void *)word_count.items, word_count.capacity);
+    for (int i = 0; i < word_count.capacity; ++i)
+    {
+        printf("%d. ", i);
+        dict_token_print(word_count.items[i].key);
+        printf(" => %d; ", word_count.items[i].value);
+    }
+    printf("\n");
     return result;
 }
