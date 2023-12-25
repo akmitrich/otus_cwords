@@ -23,11 +23,11 @@ struct Dict dict_new();
 
 struct Dict dict_with_capacity(int capacity);
 
-void dict_insert(struct Dict d, const char *word);
+void dict_insert(struct Dict *d, const char *word);
 
-int *dict_get(struct Dict d, const char *word);
+int *dict_get(struct Dict *d, const char *word);
 
-void dict_delete(struct Dict d);
+void dict_delete(struct Dict *d);
 
 struct Token dict_token_empty(void);
 

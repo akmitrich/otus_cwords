@@ -39,17 +39,19 @@ static struct Dict word_count;
 
 void process_word(const char *word)
 {
-    int *count = dict_get(word_count, word);
+    int *count = dict_get(&word_count, word);
     if (count)
         ++(*count);
     else
-        dict_insert(word_count, word);
+        dict_insert(&word_count, word);
 }
 
 static const char *separators = "\n \t,.;-*&?!\'\"()[]{}<>=\\";
+#define WORD_BUF_SIZE 1024
 
 int process_line(char *line)
 {
+    char word_buffer[WORD_BUF_SIZE];
     int len = strlen(line);
     int current = 0;
     while (current < len)
@@ -70,16 +72,18 @@ int process_line(char *line)
             ++current;
         }
         int size = current - start;
+        if (size >= WORD_BUF_SIZE)
+            size = WORD_BUF_SIZE - 1;
         if (size > 0)
         {
-            char *word = malloc(size + 1);
             for (int i = 0; i < size; ++i)
             {
-                word[i] = line[start + i];
+                word_buffer[i] = line[start + i];
             }
-            word[size] = '\0';
+            word_buffer[size] = '\0';
+            const char *word = word_buffer;
+            printf("| %s ", word);
             process_word(word);
-            free(word);
         }
     }
     printf(" <- %s", line);
@@ -91,7 +95,7 @@ int process_file(FILE *input)
 {
     char *line = NULL;
     int result = 0;
-    word_count = dict_with_capacity(100);
+    word_count = dict_with_capacity(500);
     while (!feof(input) && !ferror(input))
     {
         line = NULL;
@@ -112,12 +116,16 @@ int process_file(FILE *input)
     printf("\n");
 
     printf("Dict: items=%p, capacity=%d\n", (void *)word_count.items, word_count.capacity);
+    int empty_count = 0;
     for (int i = 0; i < word_count.capacity; ++i)
     {
         printf("%d. ", i);
         dict_token_print(word_count.items[i].key);
         printf(" => %d; ", word_count.items[i].value);
+        if (dict_token_is_empty(word_count.items[i].key))
+            ++empty_count;
     }
-    printf("\n");
+    printf("Has %d empty slots in it\n", empty_count);
+    dict_delete(&word_count);
     return result;
 }

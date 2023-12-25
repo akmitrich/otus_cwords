@@ -4,6 +4,7 @@
 #include <string.h>
 
 static int hash(const char *token);
+static int find_item_index(struct Dict *d, const char *key);
 
 struct Dict dict_new()
 {
@@ -27,40 +28,40 @@ struct Dict dict_with_capacity(int capacity)
     return d;
 }
 
-void dict_insert(struct Dict d, const char *word)
+void dict_insert(struct Dict *d, const char *word)
 {
-    if (d.items == NULL)
+    if (d->items == NULL)
         return;
     struct Token t = dict_token_new(word);
     if (!dict_token_is_empty(t))
     {
-        int pos = hash(word) % d.capacity;
-        d.items[pos].key = t;
-        d.items[pos].value = 1;
+        int pos = find_item_index(d, word);
+        d->items[pos].key = t;
+        d->items[pos].value = 1;
     }
 }
 
-int *dict_get(struct Dict d, const char *word)
+int *dict_get(struct Dict *d, const char *word)
 {
-    if (d.items == NULL)
+    if (d->items == NULL)
         return NULL;
     int *result = NULL;
     if (word && word[0] != '\0')
     {
-        int pos = hash(word) % d.capacity;
-        if (dict_token_is_equal(d.items[pos].key, word))
-            result = &(d.items[pos].value);
+        int pos = find_item_index(d, word);
+        if (!dict_token_is_empty(d->items[pos].key))
+            result = &(d->items[pos].value);
     }
     return result;
 }
 
-void dict_delete(struct Dict d)
+void dict_delete(struct Dict *d)
 {
-    for (int i = 0; i < d.capacity; ++i)
-        if (!dict_token_is_empty(d.items[i].key))
-            dict_token_delete(d.items[i].key);
-    if (d.items)
-        free(d.items);
+    for (int i = 0; i < d->capacity; ++i)
+        if (!dict_token_is_empty(d->items[i].key))
+            dict_token_delete(d->items[i].key);
+    if (d->items)
+        free(d->items);
 }
 
 struct Token dict_token_empty(void)
@@ -116,4 +117,12 @@ int hash(const char *token)
     for (int i = 0; token[i] != '\0'; ++i)
         sum += (int)token[i];
     return sum;
+}
+
+int find_item_index(struct Dict *d, const char *key)
+{
+    int h = hash(key) % d->capacity;
+    while (!dict_token_is_empty(d->items[h].key) && !dict_token_is_equal(d->items[h].key, key))
+        h = (h + 1) % d->capacity;
+    return h;
 }
