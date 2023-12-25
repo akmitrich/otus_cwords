@@ -16,6 +16,7 @@ struct Item
 struct Dict
 {
     struct Item *items;
+    int len;
     int capacity;
 };
 

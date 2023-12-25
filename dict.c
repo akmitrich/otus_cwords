@@ -4,11 +4,14 @@
 #include <string.h>
 
 static int hash(const char *token);
+static void rehash(struct Dict *d);
 static int find_item_index(struct Dict *d, const char *key);
+
+#define THRESHOLD 75
 
 struct Dict dict_new()
 {
-    return (struct Dict){.items = NULL, .capacity = 0};
+    return (struct Dict){.items = NULL, .len = 0, .capacity = 0};
 }
 
 struct Dict dict_with_capacity(int capacity)
@@ -17,7 +20,7 @@ struct Dict dict_with_capacity(int capacity)
     if (capacity > 0)
     {
         struct Item *container = malloc(sizeof(struct Item) * capacity);
-        d = (struct Dict){.items = container, .capacity = capacity};
+        d = (struct Dict){.items = container, .len = 0, .capacity = capacity};
         for (int i = 0; i < d.capacity; ++i)
             d.items[i].key = dict_token_empty();
     }
@@ -36,8 +39,12 @@ void dict_insert(struct Dict *d, const char *word)
     if (!dict_token_is_empty(t))
     {
         int pos = find_item_index(d, word);
+        if (dict_token_is_empty(d->items[pos].key))
+            d->len += 1;
         d->items[pos].key = t;
         d->items[pos].value = 1;
+        if (d->len * 100 / d->capacity > THRESHOLD)
+            rehash(d);
     }
 }
 
@@ -125,4 +132,26 @@ int find_item_index(struct Dict *d, const char *key)
     while (!dict_token_is_empty(d->items[h].key) && !dict_token_is_equal(d->items[h].key, key))
         h = (h + 1) % d->capacity;
     return h;
+}
+
+void rehash(struct Dict *d)
+{
+    printf("Dict was: items=%p, len=%d, capacity=%d\n", (void *)d->items, d->len, d->capacity);
+    int new_capacity = d->capacity * 2;
+    if (new_capacity < 64)
+        new_capacity = 64;
+    struct Dict new_d = dict_with_capacity(new_capacity);
+    for (int i = 0; i < d->capacity; ++i)
+    {
+        if (!dict_token_is_empty(d->items[i].key))
+        {
+            const char *word = d->items[i].key.token;
+            dict_insert(&new_d, word);
+            int *count = dict_get(&new_d, word);
+            *count = d->items[i].value;
+        }
+    }
+    dict_delete(d);
+    *d = new_d;
+    printf("Dict becomes: items=%p, len=%d, capacity=%d\n", (void *)d->items, d->len, d->capacity);
 }

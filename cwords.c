@@ -82,11 +82,11 @@ int process_line(char *line)
             }
             word_buffer[size] = '\0';
             const char *word = word_buffer;
-            printf("| %s ", word);
+            // printf("| %s ", word);
             process_word(word);
         }
     }
-    printf(" <- %s", line);
+    // printf(" <- %s", line);
 
     return 0;
 }
@@ -95,7 +95,7 @@ int process_file(FILE *input)
 {
     char *line = NULL;
     int result = 0;
-    word_count = dict_with_capacity(500);
+    word_count = dict_with_capacity(50);
     while (!feof(input) && !ferror(input))
     {
         line = NULL;
@@ -115,7 +115,7 @@ int process_file(FILE *input)
     }
     printf("\n");
 
-    printf("Dict: items=%p, capacity=%d\n", (void *)word_count.items, word_count.capacity);
+    printf("Dict: items=%p, len=%d, capacity=%d\n", (void *)word_count.items, word_count.len, word_count.capacity);
     int empty_count = 0;
     for (int i = 0; i < word_count.capacity; ++i)
     {
