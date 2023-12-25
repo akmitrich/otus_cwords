@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static int hash(const struct Token *token);
+static unsigned int hash(const struct Token *token);
 static void rehash(struct Dict *d);
 static int find_item_index(const struct Dict *d, const struct Token *key);
 static int *get_item_by_key(struct Dict *d, const struct Token *key);
@@ -71,7 +71,10 @@ int *dict_get(struct Dict *d, const char *word)
 void dict_delete(struct Dict *d)
 {
     for (int i = 0; i < d->capacity; ++i)
+    {
         dict_token_delete(&d->items[i].key);
+        d->items[i].key = dict_token_empty();
+    }
     if (d->items)
         free(d->items);
 }
@@ -129,18 +132,18 @@ void dict_token_delete(struct Token *t)
 
 void dict_token_print(const struct Token *t)
 {
-    if (dict_token_is_empty(t))
-        printf("(empty)");
-    else
+    if (t && t->len > 0)
         for (int i = 0; i < t->len; ++i)
             putchar(t->token[i]);
+    else
+        printf("(empty)");
 }
 
-int hash(const struct Token *token)
+unsigned int hash(const struct Token *token)
 {
-    int sum = 0;
+    unsigned int sum = 0;
     for (int i = 0; i < token->len; ++i)
-        sum += (int)token->token[i];
+        sum += (unsigned int)token->token[i];
     return sum;
 }
 
@@ -159,7 +162,7 @@ static int *get_item_by_key(struct Dict *d, const struct Token *key)
     int *result = NULL;
     int pos = find_item_index(d, key);
     if (!dict_token_is_empty(&d->items[pos].key))
-        result = &(d->items[pos].value);
+        result = &d->items[pos].value;
     return result;
 }
 

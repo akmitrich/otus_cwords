@@ -20,7 +20,7 @@ int main(int argc, const char *argv[])
         return 1;
     }
     const char *file_path = argv[1];
-    printf(" %s.", file_path);
+    printf(" %s.\n", file_path);
 
     FILE *input = fopen(file_path, "r");
     if (input == NULL)
@@ -53,6 +53,8 @@ static const char *separators = "\n \t,.:;-*&?!\'\"()[]{}<>=\\/";
 
 int process_line(char *line)
 {
+    if (line[0] == '\0')
+        return 0;
     char word_buffer[WORD_BUF_SIZE];
     int len = strlen(line);
     int current = 0;
@@ -100,9 +102,11 @@ int process_file(FILE *input)
         line = NULL;
         size_t size = 0;
         ssize_t len = getline(&line, &size, input);
-        if (len < 0)
+        if (feof(input))
+            line[0] = '\0';
+        if (len < 0 && !feof(input))
         {
-            printf("ERROR: could not read line from file.\n");
+            printf("ERROR: could not read line from file. %d - %d\n", feof(input), ferror(input));
             result = -1;
         }
         else
@@ -114,6 +118,7 @@ int process_file(FILE *input)
     }
     printf("\n");
 
+    printf("Processing complete.\n");
     dict_print(&word_count);
     dict_delete(&word_count);
     return result;
