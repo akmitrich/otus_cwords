@@ -30,17 +30,8 @@ int *dict_get(struct Dict *d, const char *word);
 
 void dict_delete(struct Dict *d);
 
-struct Token dict_token_empty(void);
+void dict_print(struct Dict *d);
 
-struct Token
-dict_token_new(const char *word);
-
-int dict_token_is_empty(struct Token t);
-
-int dict_token_is_equal(struct Token lhs, const char *rhs);
-
-void dict_token_delete(struct Token t);
-
-void dict_token_print(struct Token t);
+void dict_token_print(const struct Token *t);
 
 #endif
